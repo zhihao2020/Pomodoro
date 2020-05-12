@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="pic">
+    <file>image.qrc</file>
+    <file>pause.ico</file>
+    <file>start.ico</file>
+    <file>error.ico</file>
+  </qresource>
+</RCC>
