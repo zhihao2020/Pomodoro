@@ -1,8 +1,8 @@
 from UI.ticktock import Ui_Form
-import time,os
+import time
 import sys
-import shelve
-from PyQt5.QtCore import QThread,pyqtSignal
+from PyQt5 import QtGui
+from PyQt5.QtCore import QThread,pyqtSignal,QTimer
 from pygame import mixer
 from PyQt5.QtWidgets import QApplication,QWidget,QMessageBox
 import datetime
@@ -15,8 +15,12 @@ class reload_showTime(QWidget,Ui_Form):
         self.threads = WorkThread()
         self.threads.start()
         self.threads.trigger.connect(self.labelTime)
-        print('hello')
-        self.init_daojiui()
+        self.pushButton_3.clicked.connect(self.init_daojiui)
+        self.pushButton_2.clicked.connect(self.pauseTimer)
+        self.pushButton.clicked.connect(self.closeTimer)
+        self.time = QTimer(self)
+        self.time.setInterval(1000)
+        self.time.timeout.connect(self.Refresh)
 
     def labelTime(self,nowTime):
         self.label.setText(nowTime)
@@ -27,32 +31,52 @@ class reload_showTime(QWidget,Ui_Form):
         mixer.music.play(loops=loops,start=start)
         mixer.music.set_volume(value)
 
+    def Refresh(self):
+        if self.count > self.relax :
+            goalTime = (datetime.datetime.now() + datetime.timedelta(minutes=(self.count-self.relax)/60)).strftime("%Y-%m-%d %H:%M:%S")
+            self.label_2.setText(r"目标时间：" + goalTime)
+            self.lcdNumber.display(self.count-self.relax )
+            self.count -= 1
+        else:
+            self.time.stop()
+            self.pushButton_3.setEnabled(True)
+            replay = QMessageBox.information(self,'提示','工作时间结束，现在是否休息？',QMessageBox.Yes|QMessageBox.No)
+            if replay == QMessageBox.Yes:
+                if self.relax > 0:
+                    goalTime = (datetime.datetime.now() + datetime.timedelta(minutes=(self.relax) / 60)).strftime("%Y-%m-%d %H:%M:%S")
+                    self.label_2.setText(r"目标时间：" + goalTime)
+                    self.lcdNumber.display(self.relax)
+                    self.relax -= 1
+                else:
+                    self.time.stop()
+                    self.pushButton_3.setEnabled(True)
+                    replay = QMessageBox.information(self, '提示', '休息时间结束，现在是否工作？', QMessageBox.Yes | QMessageBox.No)
+                    if replay == QMessageBox.Yes:
+                        self.work = int(self.line.split(',')[0]) * 60
+                        self.relax = int(self.line.split(',')[1]) * 60
+                        self.count = (self.work + self.relax)
+                        self.Refresh()
+
     def init_daojiui(self):
-        try:
-            s = shelve.open("../materials/apam.db")
-            work = s['work']
-            relax = s['relax']
-            s.close()
-            os.unlink("../materials/apam")
-            self.dcjiui(work)
-            print(work)
-            reply = QMessageBox.information(self, '提示', '工作时间结束，是否开始休息？', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-            if reply==QMessageBox.Yes:
-                self.dcjiui(relax)
-                reply = QMessageBox.information(self, '提示', '休息时间结束，是否开始工作？', QMessageBox.Yes | QMessageBox.No,
-                                                QMessageBox.Yes)
-                if reply == QMessageBox.Yes:
-                    pass
-        except:print("No")
-    def dcjiui(self,hour=0,mins=0,second=0):
-        seconds = int(hour * 3600 + mins * 60 + second)
-        goalTime = (datetime.datetime.now() + datetime.timedelta(minutes=mins)).strftime("%Y-%m-%d %H:%M:%S")
-        self.label_2.setText(r"目标时间："+goalTime)
-        for i in reversed(range(0, seconds)):
-            self.lcdNumber.display(i)
-            time.sleep(1)
-        self.playMusic()
-        time.sleep(0.2)
+        with open("../materials/apam.io", 'r') as fd:
+            self.line = fd.readline()
+            self.work = int(self.line.split(',')[0]) *60
+            self.relax = int(self.line.split(',')[1]) *60
+            #print(work, relax)
+            self.count = (self.work+self.relax)
+        self.time.start()
+        self.pushButton_3.setEnabled(False)
+
+    def pauseTimer(self):
+        self.time.stop()
+
+    def closeTimer(self):
+        reply = QMessageBox.warning(self, '警示', '你就关闭柠檬钟', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if reply == QMessageBox.Yes:
+            self.time.stop()
+            self.close()
+            self.lcdNumber.display(0)
+            self.pushButton_3.setEnabled(True)
 
 
 class WorkThread(QThread,Ui_Form):
@@ -70,7 +94,5 @@ class WorkThread(QThread,Ui_Form):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     myWin = reload_showTime()
-
-
     myWin.show()
     sys.exit(app.exec_())

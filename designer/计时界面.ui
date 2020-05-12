@@ -55,7 +55,7 @@
      <item>
       <widget class="QPushButton" name="pushButton_3">
        <property name="text">
-        <string>继续</string>
+        <string>开始</string>
        </property>
       </widget>
      </item>
@@ -79,20 +79,12 @@
          <property name="text">
           <string>暂停</string>
          </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>:/pic/pause.ico</normaloff>:/pic/pause.ico</iconset>
-         </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton">
          <property name="text">
           <string>结束</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>:/pic/error.ico</normaloff>:/pic/error.ico</iconset>
          </property>
         </widget>
        </item>
