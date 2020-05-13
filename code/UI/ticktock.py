@@ -57,4 +57,4 @@ class Ui_Form(object):
         self.pushButton_3.setText(_translate("Form", "开始"))
         self.pushButton_2.setText(_translate("Form", "暂停"))
         self.pushButton.setText(_translate("Form", "结束"))
-import image_rc
+

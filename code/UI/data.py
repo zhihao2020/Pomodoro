@@ -66,4 +66,4 @@ class Ui_Form(object):
         self.label.setText(_translate("Form", "名称"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Form", "按项目类型"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Form", "按时间"))
-from MatplotlibWidget import MatplotlibWidget
+from MatplotlibWidget import MyMplCanvas

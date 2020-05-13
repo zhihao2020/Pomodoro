@@ -82,4 +82,3 @@ class Ui_MainWindow(object):
         self.action.setText(_translate("MainWindow", "数据统计"))
         self.action_2.setText(_translate("MainWindow", "计时功能"))
         self.action_3.setText(_translate("MainWindow", "关于作者"))
-import image_rc

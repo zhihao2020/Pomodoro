@@ -1,7 +1,7 @@
+# -*- coding:utf-8 -*-
 from UI.ticktock import Ui_Form
 import time
 from PyQt5.QtCore import QTimer
-
 from PyQt5.QtWidgets import QWidget
 
 class MyTimer(QWidget,Ui_Form):
