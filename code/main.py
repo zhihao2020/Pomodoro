@@ -22,7 +22,8 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
         self.pushButton.clicked.connect(self.dcjiui)
         self.timer = MyTimer()
         self.a =reload_showTime()
-
+        self.timer.showWin.connect(self.show)
+        self.a.showWin.connect(self.show)
         self._rcwin = None
 
     def aboutMe(self):

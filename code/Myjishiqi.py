@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
 from UI.ticktock import Ui_Form
+from PyQt5 import QtGui
 import time
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer,pyqtSignal
 from PyQt5.QtWidgets import QWidget
 
 class MyTimer(QWidget,Ui_Form):
+    showWin = pyqtSignal(bool)
     def __init__(self):
         super(MyTimer, self).__init__()
         self.setupUi(self)
@@ -61,3 +63,8 @@ class MyTimer(QWidget,Ui_Form):
         # 还原至初始状态
         self.init()
         self.timer.stop()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.init()
+        self.timer.stop()
+        self.showWin.emit(True)
