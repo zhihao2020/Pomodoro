@@ -3,6 +3,7 @@ from UI.ticktock import Ui_Form
 import time
 import sys,os
 from PyQt5 import QtGui
+from PyQt5.QtSql import QSqlDatabase,QSqlQuery
 from PyQt5.QtCore import QThread,pyqtSignal,QTimer
 from pygame import mixer
 from PyQt5.QtWidgets import QApplication,QWidget,QMessageBox
@@ -23,6 +24,14 @@ class reload_showTime(QWidget,Ui_Form):
         self.id = self.time.setInterval(1000)
         self.time.timeout.connect(self.Refresh)
         self.readData()
+
+        self.db = QSqlDatabase.addDatabase('QSQLITE', "db")
+        self.db.setDatabaseName('data.db')
+        self.db.open()
+
+        if self.db.open() is None:
+            print(QMessageBox.critical(self, "警告", "数据库连接失败，请查看数据库配置", QMessageBox.Yes))
+        self.query = QSqlQuery(self.db)
 
     def readData(self):
         with open("apam.io", 'r') as fd:
@@ -60,6 +69,9 @@ class reload_showTime(QWidget,Ui_Form):
             self.time.stop()
 
             replay = QMessageBox.information(self, '提示', '工作时间结束，现在是否休息？', QMessageBox.Yes | QMessageBox.No)
+            self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')"
+                             % (datetime.datetime.today().strftime('%Y-%m-%d'),self.line.split(',')[0]))
+
             if replay == QMessageBox.Yes:
                 self.count = -1
                 self.time.start()
@@ -77,6 +89,8 @@ class reload_showTime(QWidget,Ui_Form):
             self.relax -= 1
 
         elif self.relax == 0:
+            self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
+            datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
             print(4)
             self.playMusic()
             self.time.stop()
@@ -105,6 +119,7 @@ class reload_showTime(QWidget,Ui_Form):
         self.lcdNumber.display(0)
         self.pushButton_3.setEnabled(True)
         self.showWin.emit(True)
+        self.db.close()
 
 
 class WorkThread(QThread,Ui_Form):

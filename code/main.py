@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
+import PyQt5.QtCore
 from PyQt5.QtWidgets import QApplication,QMainWindow,QSystemTrayIcon,QAction,QMenu,QMessageBox
 from PyQt5.QtCore import Qt,pyqtSignal,QCoreApplication
 import sys,os
+import matplotlib.pyplot as plt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 import webbrowser
+from PyQt5.QtSql import QSqlDatabase,QSqlQuery
 from UI.start import Ui_MainWindow
 from showTime import reload_showTime
 from Myjishiqi import MyTimer
@@ -26,6 +29,14 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
         self.a.showWin.connect(self.show)
         self._rcwin = None
 
+        self.db = QSqlDatabase.addDatabase('QSQLITE', "db2")
+        self.db.setDatabaseName('data.db')
+        self.db.open()
+
+        if self.db.open() is None:
+            print(QMessageBox.critical(self, "警告", "数据库连接失败，请查看数据库配置", QMessageBox.Yes))
+        self.query = QSqlQuery(self.db)
+
     def aboutMe(self):
         webbrowser.open_new_tab('https://zhihao2020.github.io/about/')
 
@@ -35,7 +46,25 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
      #       pyautogui.moveRel(0, 10, duration=2)
 
     def showData(self):
-        pass
+        d = {}
+        x = []
+        y = []
+        self.query.exec_("SELECT * from 倒计时 ")
+        while (self.query.next()):
+            keys = str(self.query.value(0))
+            d[keys]=  int(self.query.value(1)) + int(d.get(keys,'0'))
+            print(d[keys])
+        for key in d.keys():
+            x.append(key)
+            y.append(d[key])
+        print("数据加载完毕")
+        plt.rcParams['font.family'] = ['SimHei']  # 用来正常显示中文标签
+        plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+        plt.xlabel("日期（天）")
+        plt.ylabel("时间（min)")
+        plt.ylim(ymin=0)
+        plt.plot(x,y)
+        plt.show()
 
     def dcjiui(self):
         with open("apam.io",'w') as fd:
@@ -59,6 +88,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     QApplication.setQuitOnLastWindowClosed(False)
     myWin = reload_mainWin()
+    myWin.setWindowOpacity(0.9)
     myWin.show()
     tp = QSystemTrayIcon(myWin)
     tp.setIcon(QIcon(r'F:\Pomodoro\materials\lemon.ico'))

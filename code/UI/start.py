@@ -52,6 +52,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.spinBox, 2, 0, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
         MainWindow.setCentralWidget(self.centralwidget)
+
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
