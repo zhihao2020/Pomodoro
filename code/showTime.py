@@ -45,12 +45,13 @@ class reload_showTime(QWidget,Ui_Form):
 
     def playMusic(self,loops=1,start=0.0,value=1):
         mixer.init()
-        mixer.music.load(r"alarm.wav")
+        mixer.music.load(r"1.mp3")
         mixer.music.play(loops=loops,start=start)
         mixer.music.set_volume(value)
 
     def init_daojiui(self):
         self.readData()
+        self.now = datetime.datetime.now()
         self.time.start()
         self.pushButton_3.setEnabled(False)
 
@@ -58,7 +59,7 @@ class reload_showTime(QWidget,Ui_Form):
         if self.count > self.relax :
             print(self.count)
             print(1)
-            goalTime = (datetime.datetime.now() + datetime.timedelta(minutes=(self.work)/60)).strftime("%Y-%m-%d %H:%M:%S")
+            goalTime = (self.now + datetime.timedelta(minutes=(self.work)/60)).strftime("%Y-%m-%d %H:%M:%S")
             self.label_2.setText(r"目标时间：" + goalTime)
             self.lcdNumber.display(self.count-self.relax )
             self.count -= 1
@@ -74,6 +75,7 @@ class reload_showTime(QWidget,Ui_Form):
 
             if replay == QMessageBox.Yes:
                 self.count = -1
+                self.now = datetime.datetime.now()
                 self.time.start()
             else:
                 self.pushButton_3.setEnabled(True)
@@ -82,7 +84,7 @@ class reload_showTime(QWidget,Ui_Form):
         elif self.relax > 0:
             print(3)
             self.pushButton_3.setEnabled(False)
-            goalTime = (datetime.datetime.now() + datetime.timedelta(minutes=(self.relax) / 60)).strftime(
+            goalTime = (self.now + datetime.timedelta(minutes=(self.work+self.relax) / 60)).strftime(
                 "%Y-%m-%d %H:%M:%S")
             self.label_2.setText(r"目标时间：" + goalTime)
             self.lcdNumber.display(self.relax)
@@ -99,6 +101,7 @@ class reload_showTime(QWidget,Ui_Form):
                 self.work = int(self.line.split(',')[0]) * 60
                 self.relax = int(self.line.split(',')[1]) * 60
                 self.count = (self.work + self.relax)
+                self.now = datetime.datetime.now()
                 self.time.start()
             else:
                 self.pushButton_3.setEnabled(True)

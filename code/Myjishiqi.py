@@ -52,17 +52,20 @@ class MyTimer(QWidget,Ui_Form):
             self._start_time = self._current_time
         else:
             self._restart_time = self._current_time
+        self.pushButton_3.setEnabled(False)
 
     def pauseTimer(self):
         self._pause_flag = True
         self._pause_time = self._current_time
         # 停止发送信号
         self.timer.stop()
+        self.pushButton_3.setEnabled(True)
 
     def clearTimer(self):
         # 还原至初始状态
         self.init()
         self.timer.stop()
+        self.pushButton_3.setEnabled(True)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.init()

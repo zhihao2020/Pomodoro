@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 import webbrowser
+import pyautogui
 from PyQt5.QtSql import QSqlDatabase,QSqlQuery
 from UI.start import Ui_MainWindow
 from showTime import reload_showTime
@@ -28,6 +29,7 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
         self.timer.showWin.connect(self.show)
         self.a.showWin.connect(self.show)
         self._rcwin = None
+        #self.radioButton.toggled.connect(lambda:self.moveMouse(self.radioButton))
 
         self.db = QSqlDatabase.addDatabase('QSQLITE', "db2")
         self.db.setDatabaseName('data.db')
@@ -40,10 +42,10 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
     def aboutMe(self):
         webbrowser.open_new_tab('https://zhihao2020.github.io/about/')
 
-    #def moveMouse(self,Bool=False):
-     #   while Bool:
-     #       pyautogui.moveRel(0, -10000, duration=2)
-     #       pyautogui.moveRel(0, 10, duration=2)
+    def moveMouse(self,Bool=False):
+        while Bool:
+            pyautogui.moveRel(0, -1, duration=2)
+            pyautogui.moveRel(0, 1, duration=2)
 
     def showData(self):
         d = {}
@@ -79,7 +81,7 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
         self.hide()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        reply = QMessageBox.warning(self, '警示', '你就关闭柠檬钟', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        reply = QMessageBox.warning(self, '警示', '你就关闭柠檬钟', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             QApplication.setQuitOnLastWindowClosed(True)
             self.close()
