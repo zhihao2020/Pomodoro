@@ -10,6 +10,8 @@ from pygame import mixer
 from PyQt5.QtWidgets import QApplication,QWidget,QMessageBox
 import datetime
 
+logging.basicConfig(filename='ProgramLog.log',level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 class reload_showTime(QWidget,Ui_Form):
     showWin = pyqtSignal(bool)
     def __init__(self):
@@ -28,11 +30,7 @@ class reload_showTime(QWidget,Ui_Form):
 
         self.db = QSqlDatabase.addDatabase('QSQLITE', "db")
         self.db.setDatabaseName('data.db')
-        self.db.open()
 
-        if self.db.open() is None:
-            print(QMessageBox.critical(self, "警告", "数据库连接失败，请查看数据库配置", QMessageBox.Yes))
-        self.query = QSqlQuery(self.db)
 
     def readData(self):
         with open("apam.io", 'r') as fd:
@@ -44,21 +42,29 @@ class reload_showTime(QWidget,Ui_Form):
     def labelTime(self,nowTime):
         self.label.setText(nowTime)
 
-    def playMusic(self,loops=1,start=0.0,value=1):
+    def playMusic(self,endFlag,loops=1,start=0.0,value=1,flag=0):
+        # 音乐初始化
         mixer.init()
-        mixer.music.load(r"1.mp3")
-        mixer.music.play(loops=loops,start=start)
-        mixer.music.set_volume(value)
+        if flag == 1:
+            mixer.music.load(r"1.mp3")
+        else:
+            mixer.music.load(r"2.mp3")
+        if endFlag:
+            mixer.music.play(loops=loops,start=start)
+            mixer.music.set_volume(value)
+        else:
+            mixer.stop()
 
     def init_daojiui(self):
         self.readData()
         self.now = datetime.datetime.now()
         self.time.start()
         self.pushButton_3.setEnabled(False)
+        self.db.open()
+        self.query = QSqlQuery(self.db)
 
     def Refresh(self):
         if self.count > self.relax :
-            print(self.count)
             print(1)
             goalTime = (self.now + datetime.timedelta(minutes=(self.work)/60)).strftime("%Y-%m-%d %H:%M:%S")
             self.label_2.setText(r"目标时间：" + goalTime)
@@ -67,25 +73,25 @@ class reload_showTime(QWidget,Ui_Form):
 
         elif self.count == self.relax:
             print(2)
-            self.playMusic()
+            self.playMusic(True,flag=1)
             self.time.stop()
             self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')"
                              % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[0]))
+            logging.info("insert into 倒计时(日期,持续时间) values('%s','%s')"
+                         % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[0]))
             replay = QMessageBox.information(self, '提示', '工作时间结束，现在是否休息？', QMessageBox.Yes | QMessageBox.No)
-            print("insert into 倒计时(日期,持续时间) values('%s','%s')"
-                             % (datetime.datetime.today().strftime('%Y-%m-%d'),self.line.split(',')[0]))
             if replay == QMessageBox.Yes:
                 self.count = -1
                 self.now = datetime.datetime.now()
                 self.time.start()
             else:
                 self.pushButton_3.setEnabled(True)
-                self.close()
+
 
         elif self.relax > 0:
             print(3)
             self.pushButton_3.setEnabled(False)
-            goalTime = (self.now + datetime.timedelta(minutes=(self.work+self.relax) / 60)).strftime(
+            goalTime = (self.now + datetime.timedelta(minutes=(int(self.line.split(',')[1]) *60) / 60)).strftime(
                 "%Y-%m-%d %H:%M:%S")
             self.label_2.setText(r"目标时间：" + goalTime)
             self.lcdNumber.display(self.relax)
@@ -93,12 +99,16 @@ class reload_showTime(QWidget,Ui_Form):
 
         elif self.relax == 0:
             print(4)
-            self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
+            self.querey.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
             datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
-            self.playMusic()
+            logging.info("insert into 倒计时(日期,持续时间) values('%s','%s')"
+                         % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
+
+            self.playMusic(True)
             self.time.stop()
             replay = QMessageBox.information(self,'提示','休息时间结束，现在是否工作？',QMessageBox.Yes|QMessageBox.No)
             if replay == QMessageBox.Yes:
+                self.playMusic(False)
                 self.work = int(self.line.split(',')[0]) * 60
                 self.relax = int(self.line.split(',')[1]) * 60
                 self.count = (self.work + self.relax)
@@ -106,7 +116,6 @@ class reload_showTime(QWidget,Ui_Form):
                 self.time.start()
             else:
                 self.pushButton_3.setEnabled(True)
-                self.close()
 
     def pauseTimer(self):
         self.time.stop()

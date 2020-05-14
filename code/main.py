@@ -14,6 +14,8 @@ from UI.start import Ui_MainWindow
 from showTime import reload_showTime
 from Myjishiqi import MyTimer
 
+logging.basicConfig(filename='ProgramLog.log',level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 class reload_mainWin(QMainWindow,Ui_MainWindow):
     daojishiSignal = pyqtSignal(list)
 
@@ -60,7 +62,7 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
         plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
         plt.xlabel("日期（天）")
         plt.ylabel("时间（min)")
-        plt.plot(x,y)
+        plt.plot(x,y,marker='o')
         plt.show()
         db.close()
 
