@@ -4,7 +4,7 @@ import time
 import logging
 import sys,os
 from PyQt5 import QtGui
-from PyQt5.QtSql import QSqlDatabase,QSqlQuery
+from PyQt5.QtSql import QSqlDatabase,QSqlQuery,QSqlError
 from PyQt5.QtCore import QThread,pyqtSignal,QTimer
 from pygame import mixer
 from PyQt5.QtWidgets import QApplication,QWidget,QMessageBox
@@ -60,7 +60,10 @@ class reload_showTime(QWidget,Ui_Form):
         self.now = datetime.datetime.now()
         self.time.start()
         self.pushButton_3.setEnabled(False)
-        self.db.open()
+        try:
+            self.db.open()
+        except QSqlError.ConnectionError:
+            logging.error("没有连接数据库")
         self.query = QSqlQuery(self.db)
 
     def Refresh(self):
@@ -99,7 +102,7 @@ class reload_showTime(QWidget,Ui_Form):
 
         elif self.relax == 0:
             print(4)
-            self.querey.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
+            self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
             datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
             logging.info("insert into 倒计时(日期,持续时间) values('%s','%s')"
                          % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))

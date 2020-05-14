@@ -9,7 +9,7 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QIcon
 import logging
 import webbrowser
-from PyQt5.QtSql import QSqlDatabase,QSqlQuery
+from PyQt5.QtSql import QSqlDatabase,QSqlQuery,QSqlError
 from UI.start import Ui_MainWindow
 from showTime import reload_showTime
 from Myjishiqi import MyTimer
@@ -40,10 +40,10 @@ class reload_mainWin(QMainWindow,Ui_MainWindow):
     def showData(self):
         db = QSqlDatabase.addDatabase('QSQLITE', "db2")
         db.setDatabaseName('data.db')
-        db.open()
-
-        if db.open() is None:
-            print(QMessageBox.critical(self, "警告", "数据库连接失败，请查看数据库配置", QMessageBox.Yes))
+        try:
+            db.open()
+        except QSqlError.ConnectionError:
+            logging.error("没有连接数据库")
         query = QSqlQuery(db)
         d = {}
         x = []
