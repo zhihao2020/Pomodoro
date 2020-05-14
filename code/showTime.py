@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from UI.ticktock import Ui_Form
 import time
+import logging
 import sys,os
 from PyQt5 import QtGui
 from PyQt5.QtSql import QSqlDatabase,QSqlQuery
@@ -68,11 +69,11 @@ class reload_showTime(QWidget,Ui_Form):
             print(2)
             self.playMusic()
             self.time.stop()
-
-            replay = QMessageBox.information(self, '提示', '工作时间结束，现在是否休息？', QMessageBox.Yes | QMessageBox.No)
             self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')"
+                             % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[0]))
+            replay = QMessageBox.information(self, '提示', '工作时间结束，现在是否休息？', QMessageBox.Yes | QMessageBox.No)
+            print("insert into 倒计时(日期,持续时间) values('%s','%s')"
                              % (datetime.datetime.today().strftime('%Y-%m-%d'),self.line.split(',')[0]))
-
             if replay == QMessageBox.Yes:
                 self.count = -1
                 self.now = datetime.datetime.now()
@@ -91,9 +92,9 @@ class reload_showTime(QWidget,Ui_Form):
             self.relax -= 1
 
         elif self.relax == 0:
+            print(4)
             self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
             datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
-            print(4)
             self.playMusic()
             self.time.stop()
             replay = QMessageBox.information(self,'提示','休息时间结束，现在是否工作？',QMessageBox.Yes|QMessageBox.No)
