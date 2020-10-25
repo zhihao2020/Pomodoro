@@ -59,13 +59,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QRadioButton" name="radioButton">
-        <property name="text">
-         <string>防止电脑休眠</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QLabel" name="label_2">
         <property name="text">
@@ -98,6 +91,13 @@
         </property>
        </widget>
       </item>
+      <item row="3" column="0">
+       <widget class="QRadioButton" name="radioButton">
+        <property name="text">
+         <string>开启音乐</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -115,6 +115,7 @@
    </attribute>
    <addaction name="action"/>
    <addaction name="action_2"/>
+   <addaction name="action_4"/>
    <addaction name="action_3"/>
   </widget>
   <action name="action">
@@ -132,9 +133,12 @@
     <string>关于作者</string>
    </property>
   </action>
+  <action name="action_4">
+   <property name="text">
+    <string>检查更新</string>
+   </property>
+  </action>
  </widget>
- <resources>
-  <include location="../images/image.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

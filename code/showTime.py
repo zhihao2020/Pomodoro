@@ -2,16 +2,18 @@
 from UI.ticktock import Ui_Form
 import time
 import logging
-import sys,os
+from PyQt5.QtGui import QFont
+import sys
 from PyQt5 import QtGui
 from PyQt5.QtSql import QSqlDatabase,QSqlQuery,QSqlError
-from PyQt5.QtCore import QThread,pyqtSignal,QTimer
+from PyQt5.QtCore import QThread,pyqtSignal,QTimer,Qt
 from pygame import mixer
-from PyQt5.QtWidgets import QApplication,QWidget,QMessageBox
+from PyQt5.QtWidgets import QApplication,QMessageBox,QWidget,QLabel
 import datetime
 
 logging.basicConfig(filename='ProgramLog.log',level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
+
 class reload_showTime(QWidget,Ui_Form):
     showWin = pyqtSignal(bool)
     def __init__(self):
@@ -26,17 +28,16 @@ class reload_showTime(QWidget,Ui_Form):
         self.time = QTimer(self)
         self.id = self.time.setInterval(1000)
         self.time.timeout.connect(self.Refresh)
-        self.readData()
 
         self.db = QSqlDatabase.addDatabase('QSQLITE', "db")
         self.db.setDatabaseName('data.db')
-
 
     def readData(self):
         with open("apam.io", 'r') as fd:
             self.line = fd.readline()
             self.work = int(self.line.split(',')[0]) *60
             self.relax = int(self.line.split(',')[1]) *60
+            self.radioButton = int(self.line.split(',')[2])
             self.count = (self.work+self.relax)
 
     def labelTime(self,nowTime):
@@ -68,15 +69,17 @@ class reload_showTime(QWidget,Ui_Form):
 
     def Refresh(self):
         if self.count > self.relax :
-            print(1)
             goalTime = (self.now + datetime.timedelta(minutes=(self.work)/60)).strftime("%Y-%m-%d %H:%M:%S")
             self.label_2.setText(r"目标时间：" + goalTime)
             self.lcdNumber.display(self.count-self.relax )
             self.count -= 1
 
         elif self.count == self.relax:
-            print(2)
-            self.playMusic(True,flag=1)
+            #总时间等于休息时间，即工作时间结束
+            wenzitixing = Information()
+            wenzitixing.show()
+            if self.radioButton == 1:
+                self.playMusic(True,flag=1)
             self.time.stop()
             self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')"
                              % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[0]))
@@ -84,15 +87,15 @@ class reload_showTime(QWidget,Ui_Form):
                          % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[0]))
             replay = QMessageBox.information(self, '提示', '工作时间结束，现在是否休息？', QMessageBox.Yes | QMessageBox.No)
             if replay == QMessageBox.Yes:
+                wenzitixing.close()
                 self.count = -1
                 self.now = datetime.datetime.now()
                 self.time.start()
             else:
+                wenzitixing.close()
                 self.pushButton_3.setEnabled(True)
 
-
         elif self.relax > 0:
-            print(3)
             self.pushButton_3.setEnabled(False)
             goalTime = (self.now + datetime.timedelta(minutes=(int(self.line.split(',')[1]) *60) / 60)).strftime(
                 "%Y-%m-%d %H:%M:%S")
@@ -101,17 +104,20 @@ class reload_showTime(QWidget,Ui_Form):
             self.relax -= 1
 
         elif self.relax == 0:
-            print(4)
+            #休息时间结束
             self.query.exec_("insert into 倒计时(日期,持续时间) values('%s','%s')" % (
             datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
             logging.info("insert into 倒计时(日期,持续时间) values('%s','%s')"
                          % (datetime.datetime.today().strftime('%Y-%m-%d'), self.line.split(',')[1]))
-
-            self.playMusic(True)
+            if self.radioButton == 1:
+                self.playMusic(True)
+            jieshutishi = Information2()
+            jieshutishi.show()
             self.time.stop()
             replay = QMessageBox.information(self,'提示','休息时间结束，现在是否工作？',QMessageBox.Yes|QMessageBox.No)
             if replay == QMessageBox.Yes:
-                self.playMusic(False)
+                if self.radioButton ==1:
+                    self.playMusic(False)
                 self.work = int(self.line.split(',')[0]) * 60
                 self.relax = int(self.line.split(',')[1]) * 60
                 self.count = (self.work + self.relax)
@@ -119,12 +125,13 @@ class reload_showTime(QWidget,Ui_Form):
                 self.time.start()
             else:
                 self.pushButton_3.setEnabled(True)
+            Information2.close()
 
     def pauseTimer(self):
         self.time.stop()
 
     def closeTimer(self):
-        reply = QMessageBox.warning(self, '警示', '你就要关闭倒计时', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        reply = QMessageBox.warning(self, '警示', '关闭倒计时?', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if reply == QMessageBox.Yes:
             self.time.stop()
             self.close()
@@ -137,6 +144,34 @@ class reload_showTime(QWidget,Ui_Form):
         self.showWin.emit(True)
         self.db.close()
 
+class Information(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        label = QLabel(self)
+        label.resize(800, 100)
+        label.setText("时间到了，休息一下把:)")
+        label.setAlignment(Qt.AlignCenter)
+        label.setFont(QFont("Arial", 40))
+
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+class Information2(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        label = QLabel(self)
+        label.resize(800, 70)
+        label.setText("开始工作，加油！")
+        label.setAlignment(Qt.AlignCenter)
+        label.setFont(QFont("Arial", 40))
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
 class WorkThread(QThread,Ui_Form):
     trigger = pyqtSignal(str)
